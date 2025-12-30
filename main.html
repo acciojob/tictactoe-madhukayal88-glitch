@@ -5,24 +5,15 @@
     <title>Tic Tac Toe</title>
     <style>
         .container { text-align: center; font-family: sans-serif; margin-top: 50px; }
-        .setup-screen { margin-bottom: 20px; }
         .board { 
-            display: grid; 
-            grid-template-columns: repeat(3, 100px); 
-            grid-template-rows: repeat(3, 100px); 
-            gap: 5px; 
-            justify-content: center; 
-            margin-top: 20px;
+            display: grid; grid-template-columns: repeat(3, 100px); 
+            grid-template-rows: repeat(3, 100px); gap: 5px; 
+            justify-content: center; margin-top: 20px;
         }
         .cell { 
-            width: 100px; height: 100px; 
-            border: 2px solid black; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            font-size: 40px; 
-            cursor: pointer;
-            background-color: #f0f0f0;
+            width: 100px; height: 100px; border: 2px solid black; 
+            display: flex; align-items: center; justify-content: center; 
+            font-size: 40px; cursor: pointer; background-color: #f0f0f0;
         }
         .hidden { display: none; }
         .message { margin: 20px; font-weight: bold; font-size: 20px; }
@@ -32,9 +23,9 @@
     <div class="container">
         <h1>Tic Tac Toe</h1>
         
-        <div id="setup" class="setup-screen">
-            <input type="text" id="player-1" placeholder="Player 1 Name">
-            <input type="text" id="player-2" placeholder="Player 2 Name">
+        <div id="setup">
+            <input type="text" id="player1" placeholder="Player 1 Name">
+            <input type="text" id="player2" placeholder="Player 2 Name">
             <button id="submit">Submit</button>
         </div>
 
@@ -61,67 +52,45 @@
         const messageDiv = document.querySelector('.message');
         const cells = document.querySelectorAll('.cell');
 
-        let p1Name, p2Name;
-        let currentPlayer = 1; // 1 for Player 1, 2 for Player 2
-        let gameActive = true;
-        let boardState = ["", "", "", "", "", "", "", "", ""];
-
-        const winPatterns = [
-            [0,1,2], [3,4,5], [6,7,8], // Rows
-            [0,3,6], [1,4,7], [2,5,8], // Columns
-            [0,4,8], [2,4,6]           // Diagonals
-        ];
+        let p1, p2, currentPlayer, gameActive = true;
+        let board = ["", "", "", "", "", "", "", "", ""];
 
         submitBtn.addEventListener('click', () => {
-            p1Name = document.getElementById('player-1').value || "Player 1";
-            p2Name = document.getElementById('player-2').value || "Player 2";
+            // Updated selectors here too
+            p1 = document.getElementById('player1').value || "Player 1";
+            p2 = document.getElementById('player2').value || "Player 2";
             
+            currentPlayer = p1;
             setupDiv.classList.add('hidden');
             gameDiv.classList.remove('hidden');
-            updateMessage(`${p1Name}, you're up`);
+            messageDiv.innerText = `${p1}, you're up`;
         });
 
         cells.forEach(cell => {
-            cell.addEventListener('click', () => {
-                const index = parseInt(cell.id) - 1;
+            cell.addEventListener('click', function() {
+                const idx = parseInt(this.id) - 1;
+                if (board[idx] !== "" || !gameActive) return;
 
-                if (boardState[index] !== "" || !gameActive) return;
+                const symbol = (currentPlayer === p1) ? 'x' : 'o';
+                board[idx] = symbol;
+                this.innerText = symbol;
 
-                const symbol = currentPlayer === 1 ? 'x' : 'o';
-                boardState[index] = symbol;
-                cell.innerText = symbol;
-
-                if (checkWin()) {
-                    const winner = currentPlayer === 1 ? p1Name : p2Name;
-                    updateMessage(`${winner} congratulations you won!`);
+                if (checkWin(symbol)) {
+                    messageDiv.innerText = `${currentPlayer} congratulations you won!`;
                     gameActive = false;
-                    return;
-                }
-
-                if (!boardState.includes("")) {
-                    updateMessage("It's a draw!");
+                } else if (!board.includes("")) {
+                    messageDiv.innerText = "It's a draw!";
                     gameActive = false;
-                    return;
+                } else {
+                    currentPlayer = (currentPlayer === p1) ? p2 : p1;
+                    messageDiv.innerText = `${currentPlayer}, you're up`;
                 }
-
-                // Switch turn
-                currentPlayer = currentPlayer === 1 ? 2 : 1;
-                const nextPlayer = currentPlayer === 1 ? p1Name : p2Name;
-                updateMessage(`${nextPlayer}, you're up`);
             });
         });
 
-        function updateMessage(msg) {
-            messageDiv.innerText = msg;
-        }
-
-        function checkWin() {
-            return winPatterns.some(pattern => {
-                return pattern.every(index => {
-                    const symbol = currentPlayer === 1 ? 'x' : 'o';
-                    return boardState[index] === symbol;
-                });
-            });
+        function checkWin(s) {
+            const wins = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+            return wins.some(p => p.every(i => board[i] === s));
         }
     </script>
 </body>
